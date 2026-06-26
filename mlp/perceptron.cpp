@@ -51,7 +51,7 @@ double createPerceptron(
 * Function to get the error function of the perceptron
 * e = | w1x1 + w2x2 + ... + wnxn + bias |
 */
-double perceptronError(
+double trueValueError(
   const std::vector<double>& x,
   const std::vector<double>& w,
   const double bias
@@ -100,7 +100,8 @@ void updateWeights(
   const std::vector<double>& x,
   const double perceptron,
   const int y,
-  const double eta
+  const double eta,
+  const std::function<double(double)> activation
 ){
 
   size_t n = x.size();
@@ -113,10 +114,34 @@ void updateWeights(
 
   for( size_t i{} ; i < n ; ++i ){
 
-    w[i] = w[i] + eta * x[i] * (y - step(perceptron));
+    w[i] = w[i] + eta * x[i] * (y - activation(perceptron));
 
   }
 
-  bias = bias + eta * (y - step(perceptron));
+  bias = bias + eta * (y - activation(perceptron));
+
+}
+
+void updateWeights(
+  std::vector<double> &w,
+  double &bias,
+  const std::vector<double>& x,
+  double delta,
+  double eta
+){
+
+  size_t n = x.size();
+  size_t n_weights = w.size();
+
+  if( n != n_weights ){
+    std::cerr << "How did you make the weights.size() and norm.size() different" << std::endl;
+    return;
+  }
+
+  for( size_t i{} ; i < w.size() ; ++i ){
+      w[i] -= eta * delta * x[i];
+    }
+  
+    bias -= eta * delta;
 
 }

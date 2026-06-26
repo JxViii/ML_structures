@@ -7,8 +7,10 @@
 #include <algorithm>
 #include <limits>
 #include <random>
+#include <functional>
+#include <cmath>
 
-static constexpr bool step( double x ) { return x >= 0 ? 1 : 0; }
+static constexpr double step( double x ) { return x >= 0 ? 1.0 : 0.0; }
 static inline double sigmoide( double x ) { return 1.0 / (1.0 + std::exp(-x)); }
 
 /*
@@ -30,7 +32,7 @@ double createPerceptron(
 * Function to get the error function of the perceptron
 * e = | w1x1 + w2x2 + ... + wnxn + bias |
 */
-double perceptronError(
+double trueValueError(
   const std::vector<double>& x,
   const std::vector<double>& w,
   double bias = 0
@@ -56,7 +58,21 @@ void updateWeights(
   const std::vector<double>& x,
   const double perceptron,
   const int label,
-  const double learning_rate
+  const double learning_rate,
+  const std::function<double(double)> activation
+);
+
+/*
+* Function to update the weights w and the bias 
+* w' = w + nx(y - ŷ)
+* bias = bias + n(y - ŷ)
+*/
+void updateWeights(
+  std::vector<double> &w,
+  double &bias,
+  const std::vector<double>& x,
+  double delta,
+  double eta
 );
 
 

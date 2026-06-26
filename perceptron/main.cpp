@@ -14,7 +14,7 @@ void printEquation( const std::vector<double> w , const double bias ){
 
       sign = w[i] >= 0 ? '+' : '-';
 
-      const double wx = std::fabs(w[1]);
+      const double wx = std::fabs(w[i]);
 
       std::cout << ' ' << sign << ' ' << std::fixed << std::setprecision(6) << wx << 'x' << i+1;
     }
@@ -41,9 +41,17 @@ int main(){
 
   }
 
+  // * Separar features y labels
+  std::vector<std::vector<double>> features;
+  std::vector<double> labels;
+  for( const auto &row : normalizedData ){
+    labels.push_back( row.back() );
+    features.push_back( {row.begin(), row.end() - 1} );
+  }
+
   // * Inicializar los pesos basados en distribución normal
 
-  const int n_tags = static_cast<int>( normalizedData[0].size() );
+  const int n_tags = static_cast<int>( features[0].size() );
   std::vector<double> weigths(n_tags,-1);
   initializeWeights(weigths);
 
@@ -51,40 +59,30 @@ int main(){
 
   double eta = .01;
   double bias = .0;
-  int epochs = 10000;
+  int epochs = 5000;
   int check = 50;
-  bool errorCheck = false;
   double error = 0.0;
 
   for( int i{} ; i < epochs ; ++i){
 
     error = 0.0;
 
-    for( const auto &x: normalizedData ){
+    for( size_t j{} ; j < features.size() ; ++j ){
 
+      const auto &x = features[j];
+      const double y = labels[j];
       const double perceptron = createPerceptron( x, weigths, bias );
-      const double y = x.back();
 
-      if( i % check == 0 ){
-
-        if ( y == step(perceptron) ){
-          error += 0.0;
-        } else{
-          error += perceptronError(x, weigths, bias);
-        }
-
-      }
+      error += logLoss( sigmoide(perceptron), y );
 
       updateWeights( weigths, bias, x, perceptron, y, eta );
 
     }
 
     if( i % check == 0 ){
+      std::cout << "[ Epoch: " << i << " | Error: " << error / features.size() << " ]" << std::endl;
 
-      if( error <= 0.0001 ) break;
-
-      std::cout << "[ Epoch : " << i << " | " << " Error : " << error << "]" << std::endl;
-      std::cout << " Current Weights -> " << weigths << std::endl;
+      if( error <= 0.01 ) break;
     }
 
   }
